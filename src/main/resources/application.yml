@@ -1,0 +1,77 @@
+# Spring Application Configuration
+spring:
+  # Application name displayed in logs, actuator endpoints, etc.
+  application:
+    name: stock-market-app
+  
+  # Database Configuration
+  datasource:
+    # H2 in-memory database for development and testing
+    # This ensures we don't need a separate database server for development
+    url: jdbc:h2:mem:stockdb
+    # H2 JDBC driver class
+    driverClassName: org.h2.Driver
+    # Default credentials
+    username: sa
+    password: password
+  
+  # JPA/Hibernate Configuration
+  jpa:
+    # Dialect for H2 database
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      # Update existing schema or create when needed
+      # Options: none, validate, update, create, create-drop
+      ddl-auto: update
+    # Show SQL in logs for debugging
+    show-sql: true
+    properties:
+      hibernate:
+        # Format SQL for better readability
+        format_sql: true
+  
+  # H2 Console Configuration
+  h2:
+    console:
+      # Enable web console for H2 (accessible at /h2-console)
+      enabled: true
+      path: /h2-console
+
+# PostgreSQL Configuration for Production
+# These are commented out as we use H2 for development
+# Uncomment and configure for production use
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/stockmarket
+#    username: postgres
+#    password: postgres
+#    driver-class-name: org.postgresql.Driver
+#  jpa:
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+# Server Configuration
+server:
+  # Application port
+  port: 8080
+
+# Actuator Configuration for Health Monitoring & Metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        # Endpoints to expose (health, info, metrics)
+        include: health,info,metrics
+  endpoint:
+    health:
+      # Show detailed health information
+      show-details: always
+
+# OpenAPI / Swagger Configuration
+springdoc:
+  api-docs:
+    # Path to OpenAPI specification
+    path: /api-docs
+  swagger-ui:
+    # Path to Swagger UI
+    path: /swagger-ui.html
+    # Sort operations by HTTP method
+    operations-sorter: method 
