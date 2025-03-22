@@ -7,6 +7,8 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Latest-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![H2 Database](https://img.shields.io/badge/H2_Database-Included-0000FF?style=for-the-badge)
 ![Maven](https://img.shields.io/badge/Maven-Central-C71A36?style=for-the-badge&logo=apache-maven)
+![Kafka](https://img.shields.io/badge/Apache_Kafka-Latest-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 A comprehensive Spring Boot application for learning modern Java backend development through a stock market system.
 
@@ -20,6 +22,8 @@ A comprehensive Spring Boot application for learning modern Java backend develop
 - [Creating a New API Endpoint](#-creating-a-new-api-endpoint)
 - [Database Access](#-database-access)
 - [Making Advanced Queries](#-making-advanced-queries)
+- [Docker & Containerization](#-docker--containerization)
+- [Kafka & Event Streaming](#-kafka--event-streaming)
 - [Project Structure](#-project-structure)
 - [Key Annotations](#-key-spring-boot-annotations)
 - [Practice Exercises](#-practice-exercises)
@@ -39,6 +43,8 @@ This project helps you learn Spring Boot by building a fully functional stock ma
 - 📈 **Performance tracking**
 - 🔄 **RESTful API endpoints**
 - 📝 **Detailed documentation with Swagger/OpenAPI**
+- 🐳 **Docker containerization**
+- 🚀 **Event streaming with Kafka**
 
 ## 🚀 Setup Instructions
 
@@ -281,6 +287,8 @@ stock-market-app/
 | **@Transactional** | Defines transaction boundaries |
 | **@Component** | Generic stereotype for Spring-managed components |
 | **@Profile** | Conditionally enables beans based on environment profiles |
+| **@KafkaListener** | Subscribes to Kafka topics for message consumption |
+| **@Bean** | Declares a method as producing a bean for Spring container |
 
 ## 🏋️ Practice Exercises
 
@@ -301,6 +309,13 @@ Add a Portfolio feature
 - Calculate portfolio value and performance
 - Implement portfolio rebalancing logic
 
+### Advanced Exercise: Kafka Integration
+Implement real-time stock price updates with Kafka
+- Create a price simulator service that generates updates
+- Send updates to Kafka topics
+- Create consumers to react to price changes
+- Implement streaming analytics on transaction data
+
 ## 📖 API Documentation
 
 Swagger UI documentation is available at:
@@ -319,6 +334,86 @@ http://localhost:8080/api-docs
 - [Spring Data JPA Documentation](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/)
 - [Lombok Documentation](https://projectlombok.org/features/all)
 - [OpenAPI Documentation](https://springdoc.org/)
+
+## 🐳 Docker & Containerization
+
+This project includes Docker support for easy deployment and development.
+
+### Docker Components
+
+- **Dockerfile**: Defines how to build the application container
+- **docker-compose.yml**: Orchestrates the multi-container setup
+- **Application Profile**: `application-docker.yml` contains Docker-specific configurations
+
+### Running with Docker
+
+1. Build the application:
+   ```bash
+   mvn clean package
+   ```
+
+2. Start all services using Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Stop all services:
+   ```bash
+   docker-compose down
+   ```
+
+### Docker Architecture
+
+The Docker setup includes the following services:
+- **app**: The Spring Boot application
+- **postgres**: PostgreSQL database for persistent storage
+- **zookeeper**: Required for Kafka coordination
+- **kafka**: Message broker for event streaming
+- **kafka-ui**: Web UI for monitoring Kafka (available at http://localhost:8090)
+
+## 🚀 Kafka & Event Streaming
+
+The application uses Apache Kafka for real-time event streaming of stock market data.
+
+### Kafka Topics
+
+- **stock-price-updates**: Real-time updates for stock prices
+- **stock-transactions**: Record of stock purchase and sale transactions
+
+### Kafka Components
+
+1. **Producer**: `KafkaProducerService` - Publishes messages to Kafka topics
+2. **Consumer**: `KafkaConsumerService` - Subscribes to and processes messages from Kafka topics
+3. **Configuration**: `KafkaConfig` - Defines Kafka topics and settings
+
+### Using Kafka in Your Code
+
+To publish a stock price update:
+```java
+// Inject KafkaProducerService
+@Autowired
+private KafkaProducerService kafkaProducerService;
+
+// Create and send an update
+StockPriceUpdateDTO update = StockPriceUpdateDTO.builder()
+    .symbol("AAPL")
+    .price(new BigDecimal("150.75"))
+    .change(new BigDecimal("2.30"))
+    .changePercent(new BigDecimal("1.55"))
+    .timestamp(LocalDateTime.now())
+    .build();
+    
+kafkaProducerService.sendStockPriceUpdate(update);
+```
+
+To consume messages, create a listener:
+```java
+@KafkaListener(topics = "${kafka.topics.stock-price-updates}", groupId = "${spring.kafka.consumer.group-id}")
+public void processStockUpdate(StockPriceUpdateDTO update) {
+    // Process the update
+    System.out.println("Received update for: " + update.getSymbol());
+}
+```
 
 ---
 

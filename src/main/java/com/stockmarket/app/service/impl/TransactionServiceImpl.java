@@ -3,6 +3,7 @@ package com.stockmarket.app.service.impl;
 import com.stockmarket.app.model.Transaction;
 import com.stockmarket.app.enums.TransactionType;
 import com.stockmarket.app.repository.TransactionRepository;
+import com.stockmarket.app.service.KafkaProducerService;
 import com.stockmarket.app.service.TransactionService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +22,21 @@ import java.util.List;
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     @Autowired
-    public TransactionServiceImpl(TransactionRepository transactionRepository) {
+    public TransactionServiceImpl(
+            TransactionRepository transactionRepository,
+            KafkaProducerService kafkaProducerService) {
         this.transactionRepository = transactionRepository;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     /**
      * {@inheritDoc}
      * 
      * Validates the transaction and calculates the total amount before saving.
+     * Also sends the transaction to Kafka for event-driven processing.
      */
     @Override
     public Transaction createTransaction(Transaction transaction) {
@@ -45,7 +51,13 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setTotalAmount(totalAmount);
         }
         
-        return transactionRepository.save(transaction);
+        // Save to database
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        
+        // Send to Kafka
+        kafkaProducerService.sendTransaction(savedTransaction);
+        
+        return savedTransaction;
     }
 
     /**
@@ -93,6 +105,7 @@ public class TransactionServiceImpl implements TransactionService {
      * {@inheritDoc}
      * 
      * Updates an existing transaction, recalculating the total amount if necessary.
+     * Also sends the updated transaction to Kafka.
      */
     @Override
     public Transaction updateTransaction(Long id, Transaction updatedTransaction) {
@@ -114,7 +127,13 @@ public class TransactionServiceImpl implements TransactionService {
             existingTransaction.setTimestamp(updatedTransaction.getTimestamp());
         }
         
-        return transactionRepository.save(existingTransaction);
+        // Save to database
+        Transaction savedTransaction = transactionRepository.save(existingTransaction);
+        
+        // Send to Kafka
+        kafkaProducerService.sendTransaction(savedTransaction);
+        
+        return savedTransaction;
     }
 
     /**

@@ -2,9 +2,11 @@ package com.stockmarket.app.service.impl;
 
 import com.stockmarket.app.dto.StockCreateRequest;
 import com.stockmarket.app.dto.StockDTO;
+import com.stockmarket.app.dto.StockPriceUpdateDTO;
 import com.stockmarket.app.dto.StockUpdateRequest;
 import com.stockmarket.app.model.Stock;
 import com.stockmarket.app.repository.StockRepository;
+import com.stockmarket.app.service.KafkaProducerService;
 import com.stockmarket.app.service.StockService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ public class StockServiceImpl implements StockService {
      * 3. It's a good practice for required dependencies
      */
     private final StockRepository stockRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     /**
      * {@inheritDoc}
@@ -248,14 +251,29 @@ public class StockServiceImpl implements StockService {
 
     /**
      * Helper method to update change and change percent values.
-     * Demonstrates the DRY (Don't Repeat Yourself) principle.
+     * Also sends a price update notification via Kafka.
      */
     private void updateChangeValues(Stock stock) {
+        // Calculate change (difference between current price and previous close)
         stock.setChange(stock.getCurrentPrice().subtract(stock.getPreviousClose()));
+        
+        // Calculate change percent
         stock.setChangePercent(
                 stock.getChange().divide(stock.getPreviousClose(), 4, RoundingMode.HALF_UP)
                         .multiply(BigDecimal.valueOf(100))
         );
+        
+        // Send price update to Kafka
+        StockPriceUpdateDTO update = StockPriceUpdateDTO.builder()
+                .symbol(stock.getSymbol())
+                .price(stock.getCurrentPrice())
+                .change(stock.getChange())
+                .changePercent(stock.getChangePercent())
+                .timestamp(LocalDateTime.now())
+                .build();
+        
+        kafkaProducerService.sendStockPriceUpdate(update);
+        log.info("Sent price update to Kafka for {}: {}", stock.getSymbol(), stock.getCurrentPrice());
     }
 
     /**
