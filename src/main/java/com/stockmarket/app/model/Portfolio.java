@@ -17,6 +17,18 @@ import java.util.List;
  * 
  * This demonstrates JPA relationships:
  * - @OneToMany relationship with PortfolioItem
+ * 
+ * >>>>>>>>>>>
+ * QUIZ 2: Working with Entities and DTOs (Part 1)
+ * 
+ * Your task:
+ * 1. Review this Portfolio entity class and understand:
+ *    - How JPA annotations are used (@Entity, @Id, etc.)
+ *    - How Lombok annotations are used (@Data, @Builder, etc.)
+ *    - The relationship between Portfolio and PortfolioItem
+ * 
+ * Then create a corresponding PortfolioDTO class in the dto package
+ * >>>>>>>>>>>
  */
 @Entity
 @Table(name = "portfolios")

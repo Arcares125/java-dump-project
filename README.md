@@ -1,426 +1,250 @@
-# 📈 Stock Market Application
+# Stock Market Application
 
-<div align="center">
+A Spring Boot application for simulating a stock market platform with real-time price updates.
 
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.0-6DB33F?style=for-the-badge&logo=spring-boot)
-![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=java&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Latest-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![H2 Database](https://img.shields.io/badge/H2_Database-Included-0000FF?style=for-the-badge)
-![Maven](https://img.shields.io/badge/Maven-Central-C71A36?style=for-the-badge&logo=apache-maven)
-![Kafka](https://img.shields.io/badge/Apache_Kafka-Latest-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+## 📋 Project Overview
 
-A comprehensive Spring Boot application for learning modern Java backend development through a stock market system.
+This application provides a RESTful API for managing stocks, portfolios, and tracking market performance. It includes real-time stock price simulations with Kafka integration for event-driven updates.
 
-</div>
+## 🛠️ Tools & Libraries Used
 
-## 📑 Table of Contents
+- **Spring Boot**: Core framework
+- **Spring Data JPA**: Database interactions 
+- **Spring Kafka**: Messaging and event streaming
+- **H2 Database**: In-memory database for development
+- **Lombok**: Reduces boilerplate code
+- **JUnit 5**: Testing framework
+- **Mockito**: Mocking framework for testing
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Setup Instructions](#-setup-instructions)
-- [Creating a New API Endpoint](#-creating-a-new-api-endpoint)
-- [Database Access](#-database-access)
-- [Making Advanced Queries](#-making-advanced-queries)
-- [Docker & Containerization](#-docker--containerization)
-- [Kafka & Event Streaming](#-kafka--event-streaming)
-- [Project Structure](#-project-structure)
-- [Key Annotations](#-key-spring-boot-annotations)
-- [Practice Exercises](#-practice-exercises)
-- [API Documentation](#-api-documentation)
-- [Learning Resources](#-learning-resources)
+## ⚙️ Installation & Setup
 
-## 🔭 Overview
+### Prerequisites
+- Java 17+
+- Maven 3.6+
+- Kafka (for running with full functionality)
 
-This project helps you learn Spring Boot by building a fully functional stock market application with real-world features. Perfect for beginners and intermediate developers looking to understand enterprise Java development.
-
-## ✨ Features
-
-- 🔐 **User authentication and authorization**
-- 📊 **Stock management with CRUD operations**
-- 💰 **Transaction recording system**
-- 📂 **Portfolio management**
-- 📈 **Performance tracking**
-- 🔄 **RESTful API endpoints**
-- 📝 **Detailed documentation with Swagger/OpenAPI**
-- 🐳 **Docker containerization**
-- 🚀 **Event streaming with Kafka**
-
-## 🚀 Setup Instructions
-
-### Using Spring Initializer
-
-1. Go to [Spring Initializer](https://start.spring.io/)
-2. Configure your project with:
-   - Project: Maven
-   - Language: Java
-   - Spring Boot: 3.2.0
-   - Group: com.stockmarket
-   - Artifact: stock-market-app
-   - Name: stock-market-app
-   - Description: Stock Market Application for Learning Spring Boot
-   - Package name: com.stockmarket.app
-   - Packaging: Jar
-   - Java version: 17
-
-3. Add the following dependencies:
-   - Spring Web
-   - Spring Data JPA
-   - Lombok
-   - H2 Database
-   - PostgreSQL Driver
-   - Validation
-   - Spring Boot Actuator
-   - Spring Cloud LoadBalancer
-   - SpringDoc OpenAPI
-
-4. Click "Generate" and download the project
-5. Extract the ZIP file and open it in your favorite IDE
-
-### Starting the Application
-
-Run the application using Maven:
+### Running the Application
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/stockmarket-app.git
+
+# Navigate to the project directory
+cd stockmarket-app
+
+# Build the project
+mvn clean install
+
+# Run the application
 mvn spring-boot:run
 ```
 
-## 🛠 Creating a New API Endpoint
+## 🔄 API Endpoints
 
-Follow these steps in order to create a new API endpoint in the application:
+### Stocks
+- `GET /api/stocks` - Get all stocks
+- `GET /api/stocks/{id}` - Get stock by ID
+- `GET /api/stocks/symbol/{symbol}` - Get stock by symbol
+- `POST /api/stocks` - Create a new stock
+- `PUT /api/stocks/symbol/{symbol}` - Update stock details
+- `DELETE /api/stocks/{id}` - Delete a stock
 
-### 1. Create the Model/Entity
+### Portfolios
+- `GET /api/portfolios` - Get all portfolios
+- `GET /api/portfolios/{id}` - Get portfolio by ID
+- `POST /api/portfolios` - Create a new portfolio
+- `PUT /api/portfolios/{id}` - Update portfolio details
+- `DELETE /api/portfolios/{id}` - Delete a portfolio
 
-Create a new Java class in `src/main/java/com/stockmarket/app/model/MyEntity.java`
+### Performance
+- `GET /api/portfolios/performance/{id}` - Get portfolio performance metrics
 
-```java
-@Entity
-@Table(name = "my_entities")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class MyEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @NotBlank(message = "Name is required")
-    private String name;
-    
-    // Other fields, getters, setters
-}
-```
-
-### 2. Create the Repository Interface
-
-Create a new interface in `src/main/java/com/stockmarket/app/repository/MyEntityRepository.java`
-
-```java
-@Repository
-public interface MyEntityRepository extends JpaRepository<MyEntity, Long> {
-    List<MyEntity> findByName(String name);
-    
-    @Query("SELECT e FROM MyEntity e WHERE e.someField = :value")
-    List<MyEntity> findBySomeCustomCriteria(@Param("value") String value);
-}
-```
-
-### 3. Create the Service Interface
-
-Create a new interface in `src/main/java/com/stockmarket/app/service/MyEntityService.java`
-
-```java
-public interface MyEntityService {
-    MyEntity create(MyEntity entity);
-    MyEntity getById(Long id);
-    List<MyEntity> getAll();
-    MyEntity update(Long id, MyEntity entity);
-    void delete(Long id);
-}
-```
-
-### 4. Implement the Service
-
-Create a new class in `src/main/java/com/stockmarket/app/service/impl/MyEntityServiceImpl.java`
-
-```java
-@Service
-public class MyEntityServiceImpl implements MyEntityService {
-    private final MyEntityRepository repository;
-    
-    @Autowired
-    public MyEntityServiceImpl(MyEntityRepository repository) {
-        this.repository = repository;
-    }
-    
-    // Implement all methods from the interface
-}
-```
-
-### 5. Create DTOs if needed
-
-Create a new class in `src/main/java/com/stockmarket/app/dto/MyEntityDTO.java`
-
-```java
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class MyEntityDTO {
-    private Long id;
-    private String name;
-    // Other fields
-}
-```
-
-### 6. Create the Controller
-
-Create a new class in `src/main/java/com/stockmarket/app/controller/MyEntityController.java`
-
-```java
-@RestController
-@RequestMapping("/api/my-entities")
-@Tag(name = "My Entity", description = "My Entity management APIs")
-public class MyEntityController {
-    private final MyEntityService service;
-    
-    @Autowired
-    public MyEntityController(MyEntityService service) {
-        this.service = service;
-    }
-    
-    @PostMapping
-    @Operation(summary = "Create a new entity")
-    public ResponseEntity<MyEntity> create(@Valid @RequestBody MyEntity entity) {
-        // Implementation
-    }
-    
-    // Other endpoints
-}
-```
-
-### 7. Add Unit and Integration Tests
-
-### 8. Access and Test Your API
-
-- Start the application with `mvn spring-boot:run`
-- Access the Swagger UI at `http://localhost:8080/swagger-ui.html`
-- Test endpoints directly from Swagger or with tools like Postman
-
-## 💾 Database Access
-
-The application is configured to use H2 in-memory database by default.
-
-<div align="center">
-
-| Setting | Value |
-|---------|-------|
-| **H2 Console URL** | http://localhost:8080/h2-console |
-| **JDBC URL** | jdbc:h2:mem:stockdb |
-| **Username** | sa |
-| **Password** | password |
-
-</div>
-
-For production, you can configure PostgreSQL by uncommenting the PostgreSQL section in `application.yml`.
-
-## 🔍 Making Advanced Queries
-
-The project demonstrates different ways to create database queries:
-
-1. **Method name conventions**:
-   ```java
-   List<Transaction> findByStockSymbol(String stockSymbol);
-   ```
-
-2. **JPQL queries**:
-   ```java
-   @Query("SELECT t FROM Transaction t WHERE t.totalAmount > :amount")
-   List<Transaction> findTransactionsWithTotalAmountGreaterThan(@Param("amount") BigDecimal amount);
-   ```
-
-3. **Native SQL queries**:
-   ```java
-   @Query(value = "SELECT * FROM transactions WHERE stock_symbol = :symbol", nativeQuery = true)
-   List<Transaction> findBySymbolNative(@Param("symbol") String symbol);
-   ```
-
-4. **Custom repositories**: Create repository classes with `EntityManager` for complex operations
-
-5. **Projections**: Create interfaces for returning partial entities
-
-## 📂 Project Structure
+## 📁 Project Structure
 
 ```
-stock-market-app/
-├── src/
-│   ├── main/
-│   │   ├── java/com/stockmarket/app/
-│   │   │   ├── config/        # Configuration classes
-│   │   │   ├── controller/    # REST controllers
-│   │   │   ├── dto/           # Data Transfer Objects
-│   │   │   ├── enums/         # Enumeration types
-│   │   │   ├── exception/     # Custom exceptions
-│   │   │   ├── model/         # JPA entities
-│   │   │   ├── repository/    # Data repositories
-│   │   │   ├── service/       # Service interfaces and implementations
-│   │   │   └── StockMarketAppApplication.java  # Main class
-│   │   └── resources/
-│   │       ├── application.yml  # Application configuration
-│   │       ├── data.sql         # Initial data script (optional)
-│   │       └── schema.sql       # Schema creation script (optional)
-│   └── test/                  # Test classes
-└── pom.xml                    # Maven dependencies
+src/
+├── main/
+│   ├── java/
+│   │   └── com/
+│   │       └── stockmarket/
+│   │           └── app/
+│   │               ├── config/       # Configuration classes
+│   │               ├── controller/   # REST controllers
+│   │               ├── dto/          # Data Transfer Objects
+│   │               ├── enums/        # Enumerations
+│   │               ├── exception/    # Custom exceptions
+│   │               ├── model/        # Entity models
+│   │               ├── repository/   # Data repositories
+│   │               ├── service/      # Business logic services
+│   │               └── util/         # Utility classes
+│   └── resources/
+│       ├── application.properties    # Application configuration
+│       └── data.sql                  # Initial data setup
+└── test/
+    └── java/
+        └── com/
+            └── stockmarket/
+                └── app/
+                    ├── controller/   # Controller tests
+                    ├── repository/   # Repository tests
+                    └── service/      # Service tests
 ```
 
 ## 🔑 Key Spring Boot Annotations
 
-| Annotation | Purpose |
-|------------|---------|
-| **@SpringBootApplication** | Main application annotation that combines @Configuration, @EnableAutoConfiguration, and @ComponentScan |
-| **@RestController** | Marks a class as a REST controller (combines @Controller and @ResponseBody) |
-| **@Service** | Indicates a class is a service component in the business layer |
-| **@Repository** | Marks a class as a data access component |
-| **@Entity** | JPA annotation that marks a class for database persistence |
-| **@Configuration** | Indicates a class defines Spring beans |
-| **@Autowired** | Injects dependencies automatically |
-| **@Transactional** | Defines transaction boundaries |
-| **@Component** | Generic stereotype for Spring-managed components |
-| **@Profile** | Conditionally enables beans based on environment profiles |
-| **@KafkaListener** | Subscribes to Kafka topics for message consumption |
-| **@Bean** | Declares a method as producing a bean for Spring container |
+### Core Spring Annotations
+- `@SpringBootApplication`: Marks the main application class, combining @Configuration, @EnableAutoConfiguration, and @ComponentScan
+- `@Component`: Marks a class as a Spring component
+- `@Configuration`: Indicates a class declares one or more @Bean methods
+- `@Bean`: Indicates a method produces a bean to be managed by Spring
+- `@Autowired`: Marks a constructor, field, or setter method to be autowired by Spring's dependency injection
+- `@Value`: Injects values from properties files
+- `@Qualifier`: Specifies which bean should be injected when multiple candidates exist
+- `@Profile`: Indicates that a component is eligible for registration when one or more specified profiles are active
+- `@Lazy`: Indicates whether a bean is to be lazily initialized
+- `@Scope`: Specifies the scope of a bean
+- `@Primary`: Indicates a bean should be given preference when multiple candidates qualify for autowiring
+- `@EnableScheduling`: Enables Spring's scheduled task execution capability
 
-## 🏋️ Practice Exercises
+### Web Layer Annotations
+- `@RestController`: Combines @Controller and @ResponseBody, used for RESTful controllers
+- `@Controller`: Marks a class as a web controller, capable of handling requests
+- `@RequestMapping`: Maps HTTP requests to handler methods
+- `@GetMapping`: Shortcut for @RequestMapping(method = RequestMethod.GET)
+- `@PostMapping`: Shortcut for @RequestMapping(method = RequestMethod.POST)
+- `@PutMapping`: Shortcut for @RequestMapping(method = RequestMethod.PUT)
+- `@DeleteMapping`: Shortcut for @RequestMapping(method = RequestMethod.DELETE)
+- `@PatchMapping`: Shortcut for @RequestMapping(method = RequestMethod.PATCH)
+- `@PathVariable`: Extracts values from the URI path
+- `@RequestParam`: Extracts query parameters
+- `@RequestBody`: Maps the HttpRequest body to a transfer or domain object
+- `@ResponseStatus`: Marks a method or exception class with a status code and reason
+- `@ResponseBody`: Indicates a method return value should be bound to the web response body
+- `@CrossOrigin`: Enables cross-origin resource sharing (CORS)
 
-### Basic Exercise
-Create a Stock entity and implement CRUD operations
-- Create, Read, Update, Delete operations through REST API
-- Include validation for inputs
+### Service Layer Annotations
+- `@Service`: Indicates a class is a service layer bean
+- `@Transactional`: Defines transaction boundaries and behavior
+- `@Scheduled`: Marks a method to be scheduled for recurring execution
+- `@Async`: Indicates a method should run asynchronously
+- `@Cacheable`: Indicates that the result of a method can be cached
+- `@CacheEvict`: Indicates a method that triggers cache eviction
+- `@CachePut`: Updates the cache without interfering with the method execution
+- `@RequiredArgsConstructor`: Lombok annotation that generates a constructor for all final fields
 
-### Intermediate Exercise
-Implement a Transaction system
-- Record stock purchases and sales
-- Calculate profit/loss for transactions
-- Implement endpoint to get transaction history
+### Data Access Annotations
+- `@Repository`: Indicates a class is a repository (DAO)
+- `@Entity`: Marks a class as a JPA entity
+- `@Table`: Specifies the primary table for the annotated entity
+- `@Id`: Specifies the primary key of an entity
+- `@GeneratedValue`: Specifies the generation strategy for primary keys
+- `@Column`: Specifies column mapping
+- `@OneToMany`: Defines a one-to-many relationship
+- `@ManyToOne`: Defines a many-to-one relationship
+- `@ManyToMany`: Defines a many-to-many relationship
+- `@OneToOne`: Defines a one-to-one relationship
+- `@JoinColumn`: Specifies a foreign key column
+- `@JoinTable`: Specifies a join table between two entities
+- `@Query`: Defines a custom JPQL query
+- `@Modifying`: Indicates a query is modifying and not just selecting
+- `@Transient`: Marks a field as not persistable
+- `@Embeddable`: Marks a class whose instances are stored as intrinsic part of an owning entity
+- `@Embedded`: Specifies a persistent field of an entity whose value is an instance of an embeddable class
+- `@CreatedDate`: JPA auditing - marks field to hold creation date
+- `@LastModifiedDate`: JPA auditing - marks field to hold last modification date
+- `@Builder.Default`: Lombok annotation specifying a default value for a field in a builder
 
-### Advanced Exercise
-Add a Portfolio feature
-- Create a user entity with a stock portfolio
-- Calculate portfolio value and performance
-- Implement portfolio rebalancing logic
+### Validation Annotations
+- `@Valid`: Triggers validation of an annotated bean
+- `@NotNull`: Validates that the annotated property value is not null
+- `@NotBlank`: Validates that the annotated string is not null and contains at least one non-whitespace character
+- `@NotEmpty`: Validates that the annotated element is not null nor empty
+- `@Size`: Validates that the annotated property value has a size between the attributes min and max
+- `@Min`: Validates that the annotated property has a value not less than the value attribute
+- `@Max`: Validates that the annotated property has a value not greater than the value attribute
+- `@Pattern`: Validates that the annotated string matches the specified regular expression
+- `@Email`: Validates that the annotated string is a valid email address
+- `@Positive`: Validates that the annotated numeric value is positive
+- `@PositiveOrZero`: Validates that the annotated numeric value is positive or zero
+- `@Negative`: Validates that the annotated numeric value is negative
+- `@NegativeOrZero`: Validates that the annotated numeric value is negative or zero
+- `@Past`: Validates that the annotated date is in the past
+- `@Future`: Validates that the annotated date is in the future
 
-### Advanced Exercise: Kafka Integration
-Implement real-time stock price updates with Kafka
-- Create a price simulator service that generates updates
-- Send updates to Kafka topics
-- Create consumers to react to price changes
-- Implement streaming analytics on transaction data
+### Testing Annotations
+- `@SpringBootTest`: Indicates a test that needs the Spring context
+- `@WebMvcTest`: Test slice for testing controllers with MockMvc
+- `@DataJpaTest`: Test slice for testing JPA repositories
+- `@MockBean`: Adds mock objects to the Spring context
+- `@SpyBean`: Adds spy objects to the Spring context
+- `@Mock`: Creates a mock implementation of a class or interface
+- `@InjectMocks`: Injects mock fields into the tested object
+- `@ExtendWith`: Registers extensions for JUnit Jupiter
+- `@BeforeEach`: Method to run before each test
+- `@AfterEach`: Method to run after each test
+- `@BeforeAll`: Method to run once before all tests
+- `@AfterAll`: Method to run once after all tests
+- `@Test`: Marks a method as a test
+- `@DisplayName`: Declares a custom name for a test
+- `@ParameterizedTest`: Denotes a parameterized test method
+- `@RepeatedTest`: Repeats a test a specified number of times
+- `@TestPropertySource`: Configures the property sources for a test
+- `@Captor`: Creates an ArgumentCaptor for use in verification
 
-## 📖 API Documentation
+### Lombok Annotations
+- `@Data`: Generates getters, setters, equals, hashCode, and toString methods
+- `@Builder`: Implements the builder pattern
+- `@NoArgsConstructor`: Generates a no-args constructor
+- `@AllArgsConstructor`: Generates a constructor with one parameter for each field
+- `@Getter`: Generates getters for all fields
+- `@Setter`: Generates setters for all fields
+- `@EqualsAndHashCode`: Generates equals and hashCode methods
+- `@ToString`: Generates a toString method
+- `@Slf4j`: Creates a logger field
 
-Swagger UI documentation is available at:
+### Kafka Annotations
+- `@EnableKafka`: Enables detection of Kafka listener annotations
+- `@KafkaListener`: Marks a method as a listener for Kafka topics
+- `@SendTo`: Indicates the result of a KafkaListener method should be sent to the specified topic
+
+### Exception Handling Annotations
+- `@ControllerAdvice`: Allows handling exceptions across the application
+- `@ExceptionHandler`: Handles specific exceptions in controller methods
+- `@RestControllerAdvice`: Combines @ControllerAdvice and @ResponseBody
+
+## 🔄 Kafka Integration
+
+The application integrates with Apache Kafka for real-time messaging:
+
+- Stock price updates are published to the `stock-price-updates` topic
+- Portfolio changes are published to dedicated topics
+- Events follow a standardized format for easy processing
+
+## 🔒 Security
+
+- Basic authentication for API endpoints
+- Input validation for all user inputs
+- Exception handling for robust error management
+
+## 📊 Testing
+
+```bash
+# Run tests
+mvn test
+
+# Run with coverage
+mvn test jacoco:report
 ```
-http://localhost:8080/swagger-ui.html
-```
 
-OpenAPI specification is available at:
-```
-http://localhost:8080/api-docs
-```
+## 🚀 Future Enhancements
 
-## 📚 Learning Resources
+- OAuth2 integration for improved security
+- Docker containerization
+- UI dashboard for visualization
+- User account management
+- Historical price tracking and charts
+- Integration with external market data APIs
 
-- [Spring Boot Reference Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/)
-- [Spring Data JPA Documentation](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/)
-- [Lombok Documentation](https://projectlombok.org/features/all)
-- [OpenAPI Documentation](https://springdoc.org/)
+## 📄 License
 
-## 🐳 Docker & Containerization
-
-This project includes Docker support for easy deployment and development.
-
-### Docker Components
-
-- **Dockerfile**: Defines how to build the application container
-- **docker-compose.yml**: Orchestrates the multi-container setup
-- **Application Profile**: `application-docker.yml` contains Docker-specific configurations
-
-### Running with Docker
-
-1. Build the application:
-   ```bash
-   mvn clean package
-   ```
-
-2. Start all services using Docker Compose:
-   ```bash
-   docker-compose up -d
-   ```
-
-3. Stop all services:
-   ```bash
-   docker-compose down
-   ```
-
-### Docker Architecture
-
-The Docker setup includes the following services:
-- **app**: The Spring Boot application
-- **postgres**: PostgreSQL database for persistent storage
-- **zookeeper**: Required for Kafka coordination
-- **kafka**: Message broker for event streaming
-- **kafka-ui**: Web UI for monitoring Kafka (available at http://localhost:8090)
-
-## 🚀 Kafka & Event Streaming
-
-The application uses Apache Kafka for real-time event streaming of stock market data.
-
-### Kafka Topics
-
-- **stock-price-updates**: Real-time updates for stock prices
-- **stock-transactions**: Record of stock purchase and sale transactions
-
-### Kafka Components
-
-1. **Producer**: `KafkaProducerService` - Publishes messages to Kafka topics
-2. **Consumer**: `KafkaConsumerService` - Subscribes to and processes messages from Kafka topics
-3. **Configuration**: `KafkaConfig` - Defines Kafka topics and settings
-
-### Using Kafka in Your Code
-
-To publish a stock price update:
-```java
-// Inject KafkaProducerService
-@Autowired
-private KafkaProducerService kafkaProducerService;
-
-// Create and send an update
-StockPriceUpdateDTO update = StockPriceUpdateDTO.builder()
-    .symbol("AAPL")
-    .price(new BigDecimal("150.75"))
-    .change(new BigDecimal("2.30"))
-    .changePercent(new BigDecimal("1.55"))
-    .timestamp(LocalDateTime.now())
-    .build();
-    
-kafkaProducerService.sendStockPriceUpdate(update);
-```
-
-To consume messages, create a listener:
-```java
-@KafkaListener(topics = "${kafka.topics.stock-price-updates}", groupId = "${spring.kafka.consumer.group-id}")
-public void processStockUpdate(StockPriceUpdateDTO update) {
-    // Process the update
-    System.out.println("Received update for: " + update.getSymbol());
-}
-```
-
----
-
-<div align="center">
-  
-  ⭐ **Star this repository if you find it helpful!** ⭐
-  
-  Made with ❤️ for learning Spring Boot
-  
-</div>
+This project is licensed under the MIT License - see the LICENSE file for details.
