@@ -6,7 +6,7 @@ import com.stockmarket.app.dto.StockUpdateRequest;
 import com.stockmarket.app.model.Stock;
 import com.stockmarket.app.repository.StockRepository;
 import com.stockmarket.app.service.impl.StockServiceImpl;
-import jakarta.persistence.EntityNotFoundException;
+import javax.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

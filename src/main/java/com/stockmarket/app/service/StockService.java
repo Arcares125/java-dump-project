@@ -36,7 +36,7 @@ public interface StockService {
      * 
      * @param id unique identifier of the stock
      * @return StockDTO representing the found stock
-     * @throws jakarta.persistence.EntityNotFoundException if no stock with the ID exists
+     * @throws javax.persistence.EntityNotFoundException if no stock with the ID exists
      */
     StockDTO getStockById(Long id);
     
@@ -45,7 +45,7 @@ public interface StockService {
      * 
      * @param symbol stock ticker symbol
      * @return StockDTO representing the found stock
-     * @throws jakarta.persistence.EntityNotFoundException if no stock with the symbol exists
+     * @throws javax.persistence.EntityNotFoundException if no stock with the symbol exists
      */
     StockDTO getStockBySymbol(String symbol);
     
@@ -92,7 +92,7 @@ public interface StockService {
      * @param symbol the symbol of the stock to update
      * @param request DTO containing the fields to update
      * @return StockDTO representing the updated stock
-     * @throws jakarta.persistence.EntityNotFoundException if no stock with the symbol exists
+     * @throws javax.persistence.EntityNotFoundException if no stock with the symbol exists
      */
     StockDTO updateStock(String symbol, StockUpdateRequest request);
     
@@ -100,7 +100,7 @@ public interface StockService {
      * Delete a stock from the system.
      * 
      * @param symbol the symbol of the stock to delete
-     * @throws jakarta.persistence.EntityNotFoundException if no stock with the symbol exists
+     * @throws javax.persistence.EntityNotFoundException if no stock with the symbol exists
      */
     void deleteStock(String symbol);
 } 

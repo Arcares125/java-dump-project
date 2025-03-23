@@ -1,32 +1,31 @@
 package com.stockmarket.app.model;
 
 import com.stockmarket.app.enums.TransactionType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Enumerated;
+import javax.persistence.EnumType;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Transaction Entity - represents stock purchase/sale transactions in the database.
+ * Represents a transaction in the stock market.
+ * This can be a BUY or SELL transaction.
  * 
- * This demonstrates additional JPA/Lombok features:
+ * Each transaction is associated with a specific stock and records details
+ * such as quantity, price, total value, and timestamp.
  * 
- * @Enumerated - Specifies how an enum type is stored in the database
- *               EnumType.STRING stores the enum name as a string (more readable in database)
- *               EnumType.ORDINAL stores the enum ordinal value (more efficient but less clear)
+ * @author stockmarket-app-team
+ * @version 1.0
  */
 @Entity
 @Table(name = "transactions")
@@ -41,44 +40,58 @@ public class Transaction {
     private Long id;
 
     /**
-     * The type of transaction (BUY or SELL)
+     * Type of transaction (BUY or SELL)
      */
-    @NotNull(message = "Transaction type is required")
+    @NotNull
     @Enumerated(EnumType.STRING)
     private TransactionType type;
 
     /**
-     * The stock symbol/ticker involved in the transaction
+     * Stock symbol for the transaction
      */
-    @NotBlank(message = "Stock symbol is required")
+    @NotBlank
     private String stockSymbol;
 
     /**
-     * Quantity of shares bought or sold
+     * Number of shares traded
      */
-    @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be positive")
+    @NotNull
+    @Positive
     private Integer quantity;
 
     /**
-     * Price per share at the time of the transaction
+     * Price per share at the time of transaction
      */
-    @NotNull(message = "Price per share is required")
-    @Positive(message = "Price must be positive")
+    @NotNull
+    @Positive
     private BigDecimal pricePerShare;
 
     /**
-     * Total amount of the transaction (quantity * price per share)
-     * This is calculated rather than provided directly, but we store it
-     * for easy retrieval and reporting.
+     * Total value of the transaction (quantity * pricePerShare)
+     * Calculated automatically
      */
-    @NotNull(message = "Total amount is required")
-    @Positive(message = "Total amount must be positive")
-    private BigDecimal totalAmount;
+    @NotNull
+    @Positive
+    private BigDecimal totalValue;
 
     /**
-     * Timestamp when the transaction occurred
+     * When the transaction occurred
      */
-    @NotNull(message = "Transaction timestamp is required")
+    @NotNull
     private LocalDateTime timestamp;
+
+    /**
+     * Optional user ID for the transaction
+     */
+    private String userId;
+
+    /**
+     * Optional portfolio ID if the transaction is associated with a portfolio
+     */
+    private Long portfolioId;
+
+    /**
+     * Optional notes about the transaction
+     */
+    private String notes;
 } 

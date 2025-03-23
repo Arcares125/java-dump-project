@@ -2,7 +2,7 @@ package com.stockmarket.app.controller;
 
 import com.stockmarket.app.dto.StockSummaryDTO;
 import com.stockmarket.app.repository.StockSummaryRepository;
-import jakarta.persistence.EntityNotFoundException;
+import javax.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

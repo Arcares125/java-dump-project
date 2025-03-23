@@ -1,80 +1,72 @@
 package com.stockmarket.app.service;
 
-import com.stockmarket.app.model.Transaction;
+import com.stockmarket.app.dto.TransactionCreateRequest;
+import com.stockmarket.app.dto.TransactionDTO;
+import com.stockmarket.app.dto.TransactionUpdateRequest;
 import com.stockmarket.app.enums.TransactionType;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Service interface for managing stock transactions
+ * Service interface for transaction operations.
  */
 public interface TransactionService {
-    
+
     /**
-     * Create a new transaction
-     * 
-     * @param transaction the transaction to create
-     * @return the created transaction with generated ID
+     * Creates a new transaction.
+     *
+     * @param request the transaction create request
+     * @return the created transaction as DTO
      */
-    Transaction createTransaction(Transaction transaction);
-    
+    TransactionDTO createTransaction(TransactionCreateRequest request);
+
     /**
-     * Get a transaction by its ID
-     * 
-     * @param id the ID of the transaction
-     * @return the transaction if found
-     * @throws javax.persistence.EntityNotFoundException if no transaction with the given ID exists
+     * Retrieves a transaction by its ID.
+     *
+     * @param id the transaction ID
+     * @return the transaction as DTO
+     * @throws javax.persistence.EntityNotFoundException if the transaction is not found
      */
-    Transaction getTransactionById(Long id);
-    
+    TransactionDTO getTransactionById(Long id);
+
     /**
-     * Get all transactions
-     * 
-     * @return a list of all transactions
+     * Retrieves all transactions.
+     *
+     * @return a list of all transactions as DTOs
      */
-    List<Transaction> getAllTransactions();
-    
+    List<TransactionDTO> getAllTransactions();
+
     /**
-     * Get transactions for a specific stock
-     * 
-     * @param stockSymbol the stock symbol to filter by
-     * @return a list of transactions for the given stock
+     * Retrieves transactions for a specific stock.
+     *
+     * @param stockSymbol the stock symbol
+     * @return a list of transactions as DTOs
      */
-    List<Transaction> getTransactionsByStockSymbol(String stockSymbol);
-    
+    List<TransactionDTO> getTransactionsByStockSymbol(String stockSymbol);
+
     /**
-     * Get transactions of a specific type (BUY or SELL)
-     * 
-     * @param type the transaction type to filter by
-     * @return a list of transactions of the given type
+     * Retrieves transactions of a specific type.
+     *
+     * @param type the transaction type (BUY or SELL)
+     * @return a list of transactions as DTOs
      */
-    List<Transaction> getTransactionsByType(TransactionType type);
-    
+    List<TransactionDTO> getTransactionsByType(TransactionType type);
+
     /**
-     * Get transactions within a date range
-     * 
-     * @param startDate the start date (inclusive)
-     * @param endDate the end date (inclusive)
-     * @return a list of transactions within the date range
+     * Updates an existing transaction.
+     *
+     * @param id the transaction ID
+     * @param request the transaction update request
+     * @return the updated transaction as DTO
+     * @throws javax.persistence.EntityNotFoundException if the transaction is not found
      */
-    List<Transaction> getTransactionsByDateRange(LocalDateTime startDate, LocalDateTime endDate);
-    
+    TransactionDTO updateTransaction(Long id, TransactionUpdateRequest request);
+
     /**
-     * Update an existing transaction
-     * 
-     * @param id the ID of the transaction to update
-     * @param transaction the updated transaction data
-     * @return the updated transaction
-     * @throws javax.persistence.EntityNotFoundException if no transaction with the given ID exists
-     */
-    Transaction updateTransaction(Long id, Transaction transaction);
-    
-    /**
-     * Delete a transaction by its ID
-     * 
-     * @param id the ID of the transaction to delete
-     * @throws javax.persistence.EntityNotFoundException if no transaction with the given ID exists
+     * Deletes a transaction.
+     *
+     * @param id the transaction ID
+     * @throws javax.persistence.EntityNotFoundException if the transaction is not found
      */
     void deleteTransaction(Long id);
 } 

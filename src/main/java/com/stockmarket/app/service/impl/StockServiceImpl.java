@@ -8,12 +8,12 @@ import com.stockmarket.app.model.Stock;
 import com.stockmarket.app.repository.StockRepository;
 import com.stockmarket.app.service.KafkaProducerService;
 import com.stockmarket.app.service.StockService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;

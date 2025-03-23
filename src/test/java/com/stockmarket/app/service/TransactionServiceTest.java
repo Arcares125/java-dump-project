@@ -1,10 +1,13 @@
 package com.stockmarket.app.service;
 
-import com.stockmarket.app.model.Transaction;
+import com.stockmarket.app.dto.TransactionCreateRequest;
+import com.stockmarket.app.dto.TransactionDTO;
+import com.stockmarket.app.dto.TransactionUpdateRequest;
 import com.stockmarket.app.enums.TransactionType;
+import com.stockmarket.app.model.Transaction;
 import com.stockmarket.app.repository.TransactionRepository;
 import com.stockmarket.app.service.impl.TransactionServiceImpl;
-import jakarta.persistence.EntityNotFoundException;
+import javax.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,6 +57,8 @@ public class TransactionServiceTest {
      */
     private Transaction transaction1;
     private Transaction transaction2;
+    private TransactionDTO transactionDTO1;
+    private TransactionDTO transactionDTO2;
     private List<Transaction> transactions;
     private final LocalDateTime now = LocalDateTime.now();
 
@@ -70,7 +75,7 @@ public class TransactionServiceTest {
                 .stockSymbol("AAPL")
                 .quantity(10)
                 .pricePerShare(new BigDecimal("150.00"))
-                .totalAmount(new BigDecimal("1500.00"))
+                .totalValue(new BigDecimal("1500.00"))
                 .timestamp(now)
                 .build();
 
@@ -80,11 +85,32 @@ public class TransactionServiceTest {
                 .stockSymbol("MSFT")
                 .quantity(5)
                 .pricePerShare(new BigDecimal("200.00"))
-                .totalAmount(new BigDecimal("1000.00"))
+                .totalValue(new BigDecimal("1000.00"))
                 .timestamp(now.plusDays(1))
                 .build();
 
         transactions = Arrays.asList(transaction1, transaction2);
+        
+        // Create DTOs for test data
+        transactionDTO1 = TransactionDTO.builder()
+                .id(1L)
+                .type(TransactionType.BUY)
+                .stockSymbol("AAPL")
+                .quantity(10)
+                .pricePerShare(new BigDecimal("150.00"))
+                .totalValue(new BigDecimal("1500.00"))
+                .timestamp(now)
+                .build();
+
+        transactionDTO2 = TransactionDTO.builder()
+                .id(2L)
+                .type(TransactionType.SELL)
+                .stockSymbol("MSFT")
+                .quantity(5)
+                .pricePerShare(new BigDecimal("200.00"))
+                .totalValue(new BigDecimal("1000.00"))
+                .timestamp(now.plusDays(1))
+                .build();
     }
 
     /**
@@ -95,8 +121,8 @@ public class TransactionServiceTest {
     @Test
     @DisplayName("Should create a transaction successfully")
     void createTransaction_Success() {
-        // Given a transaction to create
-        Transaction newTransaction = Transaction.builder()
+        // Given a transaction create request
+        TransactionCreateRequest createRequest = TransactionCreateRequest.builder()
                 .type(TransactionType.BUY)
                 .stockSymbol("GOOG")
                 .quantity(2)
@@ -109,7 +135,17 @@ public class TransactionServiceTest {
                 .stockSymbol("GOOG")
                 .quantity(2)
                 .pricePerShare(new BigDecimal("1000.00"))
-                .totalAmount(new BigDecimal("2000.00"))
+                .totalValue(new BigDecimal("2000.00"))
+                .timestamp(now)
+                .build();
+                
+        TransactionDTO expectedDTO = TransactionDTO.builder()
+                .id(3L)
+                .type(TransactionType.BUY)
+                .stockSymbol("GOOG")
+                .quantity(2)
+                .pricePerShare(new BigDecimal("1000.00"))
+                .totalValue(new BigDecimal("2000.00"))
                 .timestamp(now)
                 .build();
 
@@ -117,16 +153,16 @@ public class TransactionServiceTest {
         when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
 
         // When creating the transaction
-        Transaction result = transactionService.createTransaction(newTransaction);
+        TransactionDTO result = transactionService.createTransaction(createRequest);
 
-        // Then the result should be the saved transaction
+        // Then the result should be the saved transaction DTO
         assertNotNull(result);
         assertEquals(3L, result.getId());
         assertEquals(TransactionType.BUY, result.getType());
         assertEquals("GOOG", result.getStockSymbol());
         assertEquals(2, result.getQuantity());
         assertEquals(new BigDecimal("1000.00"), result.getPricePerShare());
-        assertEquals(new BigDecimal("2000.00"), result.getTotalAmount());
+        assertEquals(new BigDecimal("2000.00"), result.getTotalValue());
 
         // Verify repository interaction
         verify(transactionRepository, times(1)).save(any(Transaction.class));
@@ -146,9 +182,9 @@ public class TransactionServiceTest {
         when(transactionRepository.findById(id)).thenReturn(Optional.of(transaction1));
 
         // When retrieving the transaction
-        Transaction result = transactionService.getTransactionById(id);
+        TransactionDTO result = transactionService.getTransactionById(id);
 
-        // Then the result should be the expected transaction
+        // Then the result should be the expected transaction DTO
         assertNotNull(result);
         assertEquals(id, result.getId());
         assertEquals("AAPL", result.getStockSymbol());
@@ -188,9 +224,9 @@ public class TransactionServiceTest {
         when(transactionRepository.findAll()).thenReturn(transactions);
 
         // When retrieving all transactions
-        List<Transaction> result = transactionService.getAllTransactions();
+        List<TransactionDTO> result = transactionService.getAllTransactions();
 
-        // Then the result should be the list of transactions
+        // Then the result should be the list of transaction DTOs
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("AAPL", result.get(0).getStockSymbol());
@@ -214,9 +250,9 @@ public class TransactionServiceTest {
         when(transactionRepository.findByStockSymbol(stockSymbol)).thenReturn(List.of(transaction1));
 
         // When retrieving transactions by stock symbol
-        List<Transaction> result = transactionService.getTransactionsByStockSymbol(stockSymbol);
+        List<TransactionDTO> result = transactionService.getTransactionsByStockSymbol(stockSymbol);
 
-        // Then the result should be the filtered list
+        // Then the result should be the filtered list of DTOs
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(stockSymbol, result.get(0).getStockSymbol());
@@ -239,9 +275,9 @@ public class TransactionServiceTest {
         when(transactionRepository.findByType(type)).thenReturn(List.of(transaction1));
 
         // When retrieving transactions by type
-        List<Transaction> result = transactionService.getTransactionsByType(type);
+        List<TransactionDTO> result = transactionService.getTransactionsByType(type);
 
-        // Then the result should be the filtered list
+        // Then the result should be the filtered list of DTOs
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(type, result.get(0).getType());
@@ -251,70 +287,65 @@ public class TransactionServiceTest {
     }
 
     /**
-     * Test for getting transactions by date range.
-     * This verifies the service correctly filters transactions by date range.
-     */
-    @Test
-    @DisplayName("Should return transactions within a date range")
-    void getTransactionsByDateRange_Success() {
-        // Given a date range
-        LocalDateTime startDate = now.minusDays(1);
-        LocalDateTime endDate = now.plusDays(2);
-
-        // Mock repository behavior
-        when(transactionRepository.findByTimestampBetween(startDate, endDate)).thenReturn(transactions);
-
-        // When retrieving transactions by date range
-        List<Transaction> result = transactionService.getTransactionsByDateRange(startDate, endDate);
-
-        // Then the result should be the filtered list
-        assertNotNull(result);
-        assertEquals(2, result.size());
-
-        // Verify repository interaction
-        verify(transactionRepository, times(1)).findByTimestampBetween(startDate, endDate);
-    }
-
-    /**
      * Test for updating a transaction when it exists.
      * This verifies the service correctly updates an existing transaction.
      */
     @Test
     @DisplayName("Should update a transaction when it exists")
     void updateTransaction_Success() {
-        // Given a transaction ID and updated data
+        // Given a transaction ID and update request
         Long id = 1L;
-        Transaction updatedTransaction = Transaction.builder()
+        
+        TransactionUpdateRequest updateRequest = TransactionUpdateRequest.builder()
                 .type(TransactionType.SELL)
-                .stockSymbol("AAPL")
-                .quantity(20)
-                .pricePerShare(new BigDecimal("155.00"))
+                .quantity(15)
+                .pricePerShare(new BigDecimal("160.00"))
                 .build();
 
-        Transaction afterUpdate = Transaction.builder()
-                .id(1L)
+        Transaction existingTransaction = Transaction.builder()
+                .id(id)
+                .type(TransactionType.BUY)
+                .stockSymbol("AAPL")
+                .quantity(10)
+                .pricePerShare(new BigDecimal("150.00"))
+                .totalValue(new BigDecimal("1500.00"))
+                .timestamp(now)
+                .build();
+
+        Transaction updatedTransaction = Transaction.builder()
+                .id(id)
                 .type(TransactionType.SELL)
                 .stockSymbol("AAPL")
-                .quantity(20)
-                .pricePerShare(new BigDecimal("155.00"))
-                .totalAmount(new BigDecimal("3100.00"))
+                .quantity(15)
+                .pricePerShare(new BigDecimal("160.00"))
+                .totalValue(new BigDecimal("2400.00"))
+                .timestamp(now)
+                .build();
+                
+        TransactionDTO expectedDTO = TransactionDTO.builder()
+                .id(id)
+                .type(TransactionType.SELL)
+                .stockSymbol("AAPL")
+                .quantity(15)
+                .pricePerShare(new BigDecimal("160.00"))
+                .totalValue(new BigDecimal("2400.00"))
                 .timestamp(now)
                 .build();
 
         // Mock repository behavior
-        when(transactionRepository.findById(id)).thenReturn(Optional.of(transaction1));
-        when(transactionRepository.save(any(Transaction.class))).thenReturn(afterUpdate);
+        when(transactionRepository.findById(id)).thenReturn(Optional.of(existingTransaction));
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(updatedTransaction);
 
         // When updating the transaction
-        Transaction result = transactionService.updateTransaction(id, updatedTransaction);
+        TransactionDTO result = transactionService.updateTransaction(id, updateRequest);
 
-        // Then the result should be the updated transaction
+        // Then the result should be the updated transaction DTO
         assertNotNull(result);
         assertEquals(id, result.getId());
         assertEquals(TransactionType.SELL, result.getType());
-        assertEquals(20, result.getQuantity());
-        assertEquals(new BigDecimal("155.00"), result.getPricePerShare());
-        assertEquals(new BigDecimal("3100.00"), result.getTotalAmount());
+        assertEquals(15, result.getQuantity());
+        assertEquals(new BigDecimal("160.00"), result.getPricePerShare());
+        assertEquals(new BigDecimal("2400.00"), result.getTotalValue());
 
         // Verify repository interactions
         verify(transactionRepository, times(1)).findById(id);
@@ -323,7 +354,7 @@ public class TransactionServiceTest {
 
     /**
      * Test for deleting a transaction when it exists.
-     * This verifies the service correctly handles transaction deletion.
+     * This verifies the service correctly deletes an existing transaction.
      */
     @Test
     @DisplayName("Should delete a transaction when it exists")
@@ -332,15 +363,15 @@ public class TransactionServiceTest {
         Long id = 1L;
 
         // Mock repository behavior
-        when(transactionRepository.findById(id)).thenReturn(Optional.of(transaction1));
-        doNothing().when(transactionRepository).delete(transaction1);
+        when(transactionRepository.existsById(id)).thenReturn(true);
+        doNothing().when(transactionRepository).deleteById(id);
 
         // When deleting the transaction
         transactionService.deleteTransaction(id);
 
         // Verify repository interactions
-        verify(transactionRepository, times(1)).findById(id);
-        verify(transactionRepository, times(1)).delete(transaction1);
+        verify(transactionRepository, times(1)).existsById(id);
+        verify(transactionRepository, times(1)).deleteById(id);
     }
 
     /**
@@ -354,13 +385,13 @@ public class TransactionServiceTest {
         Long id = 999L;
 
         // Mock repository behavior
-        when(transactionRepository.findById(id)).thenReturn(Optional.empty());
+        when(transactionRepository.existsById(id)).thenReturn(false);
 
         // When/Then deleting the transaction should throw EntityNotFoundException
         assertThrows(EntityNotFoundException.class, () -> transactionService.deleteTransaction(id));
 
-        // Verify repository interactions
-        verify(transactionRepository, times(1)).findById(id);
-        verify(transactionRepository, never()).delete(any(Transaction.class));
+        // Verify repository interaction
+        verify(transactionRepository, times(1)).existsById(id);
+        verify(transactionRepository, never()).deleteById(anyLong());
     }
 } 

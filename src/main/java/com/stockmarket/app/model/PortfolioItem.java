@@ -1,20 +1,19 @@
 package com.stockmarket.app.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import java.io.Serializable;
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
- * PortfolioItem Entity - represents a stock holding within a portfolio
- * 
- * This demonstrates a ManyToOne relationship with Portfolio
+ * Entity representing an individual stock holding in a portfolio.
  */
 @Entity
 @Table(name = "portfolio_items")
@@ -22,53 +21,41 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PortfolioItem {
+public class PortfolioItem implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * The stock symbol/ticker
+     * The stock symbol (ticker) for this portfolio item.
      */
-    @NotBlank(message = "Stock symbol is required")
+    @NotBlank
     private String stockSymbol;
 
     /**
-     * Number of shares held
+     * Number of shares owned.
      */
-    @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be positive")
+    @NotNull
+    @Positive
     private Integer quantity;
 
     /**
-     * Average purchase price per share
+     * Average purchase price per share.
      */
-    @NotNull(message = "Purchase price is required")
-    @Positive(message = "Purchase price must be positive")
-    private BigDecimal purchasePrice;
+    @NotNull
+    @Positive
+    private BigDecimal averagePurchasePrice;
 
     /**
-     * Current market price per share
+     * Current value of the holding (quantity * current stock price).
      */
-    @NotNull(message = "Current price is required")
-    @Positive(message = "Current price must be positive")
-    private BigDecimal currentPrice;
-
-    /**
-     * Total current value (quantity * currentPrice)
-     */
-    @NotNull(message = "Current value is required")
-    @Positive(message = "Current value must be positive")
+    @NotNull
+    @Positive
     private BigDecimal currentValue;
 
     /**
-     * The portfolio this item belongs to
-     * 
-     * This demonstrates a many-to-one relationship
-     * 
-     * @ManyToOne - Many portfolio items can belong to one portfolio
-     * @JoinColumn - Specifies the foreign key column in the portfolio_items table
+     * The portfolio this item belongs to.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "portfolio_id")

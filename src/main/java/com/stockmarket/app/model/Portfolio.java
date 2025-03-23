@@ -1,34 +1,28 @@
 package com.stockmarket.app.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Portfolio Entity - represents a user's stock portfolio
- * 
- * This demonstrates JPA relationships:
- * - @OneToMany relationship with PortfolioItem
- * 
- * >>>>>>>>>>>
- * QUIZ 2: Working with Entities and DTOs (Part 1)
- * 
- * Your task:
- * 1. Review this Portfolio entity class and understand:
- *    - How JPA annotations are used (@Entity, @Id, etc.)
- *    - How Lombok annotations are used (@Data, @Builder, etc.)
- *    - The relationship between Portfolio and PortfolioItem
- * 
- * Then create a corresponding PortfolioDTO class in the dto package
- * >>>>>>>>>>>
+ * Entity representing a user's portfolio in the stock market application.
+ * <p>
+ * A portfolio contains a collection of stocks that a user owns. Each portfolio
+ * has a name, associated user, creation time, and a list of portfolio items
+ * that represent individual stock holdings.
+ * </p>
+ *
+ * @author stockmarket-app-team
+ * @version 1.0
  */
 @Entity
 @Table(name = "portfolios")
@@ -36,44 +30,39 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Portfolio {
+public class Portfolio implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * The name of the portfolio
+     * The name of the portfolio as given by the user.
      */
-    @NotBlank(message = "Portfolio name is required")
+    @NotBlank
     private String name;
 
     /**
-     * The user who owns this portfolio
+     * The username of the portfolio owner.
      */
-    @NotBlank(message = "Username is required")
+    @NotBlank
     private String username;
 
     /**
-     * Description of the portfolio
+     * The timestamp when the portfolio was created.
      */
-    private String description;
+    @NotNull
+    private LocalDateTime createdAt;
 
     /**
-     * Total value of all portfolio items
+     * The timestamp when the portfolio was last updated.
      */
-    @NotNull(message = "Total value is required")
-    private BigDecimal totalValue;
-
+    private LocalDateTime updatedAt;
+    
     /**
-     * List of portfolio items (stocks in this portfolio)
-     * 
-     * CascadeType.ALL - When portfolio is saved/updated/deleted, the same operation applies to its items
-     * orphanRemoval=true - If an item is removed from the list, it's also deleted from the database
-     * 
-     * This demonstrates a one-to-many relationship
+     * The list of portfolio items (stock holdings) in this portfolio.
      */
-    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<PortfolioItem> items = new ArrayList<>();
     

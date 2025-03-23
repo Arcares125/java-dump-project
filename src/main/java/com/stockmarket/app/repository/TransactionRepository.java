@@ -47,12 +47,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     
     /**
      * Example of a custom JPQL query (JPA Query Language)
-     * Finds transactions with a total amount greater than the specified value
+     * Finds transactions with a total value greater than the specified value
      * 
-     * @param amount the minimum total amount
-     * @return list of transactions with total amount greater than the specified value
+     * @param amount the minimum total value
+     * @return list of transactions with total value greater than the specified value
      */
-    @Query("SELECT t FROM Transaction t WHERE t.totalAmount > :amount")
+    @Query("SELECT t FROM Transaction t WHERE t.totalValue > :amount")
     List<Transaction> findTransactionsWithTotalAmountGreaterThan(@Param("amount") BigDecimal amount);
     
     /**
@@ -73,12 +73,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * Finds transactions with specific criteria using SQL syntax
      * 
      * @param symbol the stock symbol to search for
-     * @param minAmount the minimum total amount
+     * @param minAmount the minimum total value
      * @return list of matching transactions
      */
     @Query(value = "SELECT * FROM transactions " +
                   "WHERE stock_symbol = :symbol " +
-                  "AND total_amount > :minAmount " +
+                  "AND total_value > :minAmount " +
                   "ORDER BY timestamp DESC", 
            nativeQuery = true)
     List<Transaction> findTransactionsBySymbolAndMinAmount(

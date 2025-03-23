@@ -1,139 +1,152 @@
 package com.stockmarket.app.service.impl;
 
-import com.stockmarket.app.model.Transaction;
+import com.stockmarket.app.dto.TransactionCreateRequest;
+import com.stockmarket.app.dto.TransactionDTO;
+import com.stockmarket.app.dto.TransactionUpdateRequest;
 import com.stockmarket.app.enums.TransactionType;
+import com.stockmarket.app.model.Transaction;
 import com.stockmarket.app.repository.TransactionRepository;
-import com.stockmarket.app.service.KafkaProducerService;
 import com.stockmarket.app.service.TransactionService;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the TransactionService interface.
- * 
- * Provides business logic for transaction operations and interacts with the repository layer.
+ * This service handles all business logic related to stock transactions.
  */
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final KafkaProducerService kafkaProducerService;
-
-    @Autowired
-    public TransactionServiceImpl(
-            TransactionRepository transactionRepository,
-            KafkaProducerService kafkaProducerService) {
-        this.transactionRepository = transactionRepository;
-        this.kafkaProducerService = kafkaProducerService;
-    }
 
     /**
      * {@inheritDoc}
-     * 
-     * Validates the transaction and calculates the total amount before saving.
-     * Also sends the transaction to Kafka for event-driven processing.
      */
     @Override
-    public Transaction createTransaction(Transaction transaction) {
-        // Set creation timestamp if not provided
-        if (transaction.getTimestamp() == null) {
-            transaction.setTimestamp(LocalDateTime.now());
-        }
+    public TransactionDTO createTransaction(TransactionCreateRequest request) {
+        log.info("Creating transaction for stock {}", request.getStockSymbol());
         
-        // Calculate and set total amount
-        if (transaction.getTotalAmount() == null || transaction.getTotalAmount().compareTo(BigDecimal.ZERO) == 0) {
-            BigDecimal totalAmount = transaction.getPricePerShare().multiply(new BigDecimal(transaction.getQuantity()));
-            transaction.setTotalAmount(totalAmount);
-        }
+        BigDecimal totalValue = request.getPricePerShare().multiply(BigDecimal.valueOf(request.getQuantity()));
         
-        // Save to database
+        Transaction transaction = Transaction.builder()
+                .type(request.getType())
+                .stockSymbol(request.getStockSymbol())
+                .quantity(request.getQuantity())
+                .pricePerShare(request.getPricePerShare())
+                .totalValue(totalValue)
+                .timestamp(LocalDateTime.now())
+                .userId(request.getUserId())
+                .portfolioId(request.getPortfolioId())
+                .notes(request.getNotes())
+                .build();
+        
         Transaction savedTransaction = transactionRepository.save(transaction);
+        log.info("Transaction created with ID: {}", savedTransaction.getId());
         
-        // Send to Kafka
-        kafkaProducerService.sendTransaction(savedTransaction);
-        
-        return savedTransaction;
+        return convertToDTO(savedTransaction);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Transaction getTransactionById(Long id) {
+    public TransactionDTO getTransactionById(Long id) {
+        log.info("Retrieving transaction with ID: {}", id);
+        
         return transactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not found with ID: " + id));
+                .map(this::convertToDTO)
+                .orElseThrow(() -> {
+                    log.error("Transaction not found with ID: {}", id);
+                    return new EntityNotFoundException("Transaction not found with ID: " + id);
+                });
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Transaction> getTransactionsByStockSymbol(String stockSymbol) {
-        return transactionRepository.findByStockSymbol(stockSymbol);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Transaction> getTransactionsByType(TransactionType type) {
-        return transactionRepository.findByType(type);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Transaction> getTransactionsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return transactionRepository.findByTimestampBetween(startDate, endDate);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * Updates an existing transaction, recalculating the total amount if necessary.
-     * Also sends the updated transaction to Kafka.
-     */
-    @Override
-    public Transaction updateTransaction(Long id, Transaction updatedTransaction) {
-        Transaction existingTransaction = getTransactionById(id);
+    public List<TransactionDTO> getAllTransactions() {
+        log.info("Retrieving all transactions");
         
-        // Update fields
-        existingTransaction.setType(updatedTransaction.getType());
-        existingTransaction.setStockSymbol(updatedTransaction.getStockSymbol());
-        existingTransaction.setQuantity(updatedTransaction.getQuantity());
-        existingTransaction.setPricePerShare(updatedTransaction.getPricePerShare());
+        return transactionRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<TransactionDTO> getTransactionsByStockSymbol(String stockSymbol) {
+        log.info("Retrieving transactions for stock: {}", stockSymbol);
         
-        // Recalculate total amount
-        BigDecimal totalAmount = existingTransaction.getPricePerShare()
-                .multiply(new BigDecimal(existingTransaction.getQuantity()));
-        existingTransaction.setTotalAmount(totalAmount);
+        return transactionRepository.findByStockSymbol(stockSymbol).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<TransactionDTO> getTransactionsByType(TransactionType type) {
+        log.info("Retrieving transactions of type: {}", type);
         
-        // If timestamp was updated, use it, otherwise keep the original
-        if (updatedTransaction.getTimestamp() != null) {
-            existingTransaction.setTimestamp(updatedTransaction.getTimestamp());
+        return transactionRepository.findByType(type).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TransactionDTO updateTransaction(Long id, TransactionUpdateRequest request) {
+        log.info("Updating transaction with ID: {}", id);
+        
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Transaction not found with ID: {}", id);
+                    return new EntityNotFoundException("Transaction not found with ID: " + id);
+                });
+        
+        // Update fields if provided in the request
+        if (request.getType() != null) {
+            transaction.setType(request.getType());
+        }
+        if (request.getStockSymbol() != null) {
+            transaction.setStockSymbol(request.getStockSymbol());
+        }
+        if (request.getQuantity() != null) {
+            transaction.setQuantity(request.getQuantity());
+        }
+        if (request.getPricePerShare() != null) {
+            transaction.setPricePerShare(request.getPricePerShare());
         }
         
-        // Save to database
-        Transaction savedTransaction = transactionRepository.save(existingTransaction);
+        // Recalculate total value if quantity or price changed
+        if (request.getQuantity() != null || request.getPricePerShare() != null) {
+            BigDecimal totalValue = transaction.getPricePerShare().multiply(BigDecimal.valueOf(transaction.getQuantity()));
+            transaction.setTotalValue(totalValue);
+        }
         
-        // Send to Kafka
-        kafkaProducerService.sendTransaction(savedTransaction);
+        if (request.getNotes() != null) {
+            transaction.setNotes(request.getNotes());
+        }
         
-        return savedTransaction;
+        Transaction updatedTransaction = transactionRepository.save(transaction);
+        log.info("Transaction updated successfully");
+        
+        return convertToDTO(updatedTransaction);
     }
 
     /**
@@ -141,8 +154,35 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Override
     public void deleteTransaction(Long id) {
-        // Verify transaction exists before attempting to delete
-        Transaction transaction = getTransactionById(id);
-        transactionRepository.delete(transaction);
+        log.info("Deleting transaction with ID: {}", id);
+        
+        if (!transactionRepository.existsById(id)) {
+            log.error("Transaction not found with ID: {}", id);
+            throw new EntityNotFoundException("Transaction not found with ID: " + id);
+        }
+        
+        transactionRepository.deleteById(id);
+        log.info("Transaction deleted successfully");
+    }
+
+    /**
+     * Converts a Transaction entity to a TransactionDTO.
+     *
+     * @param transaction the transaction entity
+     * @return a DTO representation of the transaction
+     */
+    private TransactionDTO convertToDTO(Transaction transaction) {
+        return TransactionDTO.builder()
+                .id(transaction.getId())
+                .type(transaction.getType())
+                .stockSymbol(transaction.getStockSymbol())
+                .quantity(transaction.getQuantity())
+                .pricePerShare(transaction.getPricePerShare())
+                .totalValue(transaction.getTotalValue())
+                .timestamp(transaction.getTimestamp())
+                .userId(transaction.getUserId())
+                .portfolioId(transaction.getPortfolioId())
+                .notes(transaction.getNotes())
+                .build();
     }
 } 

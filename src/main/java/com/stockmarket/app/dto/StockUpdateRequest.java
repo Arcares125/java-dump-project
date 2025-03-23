@@ -1,6 +1,6 @@
 package com.stockmarket.app.dto;
 
-import jakarta.validation.constraints.Positive;
+import javax.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

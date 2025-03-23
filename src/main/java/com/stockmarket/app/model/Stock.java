@@ -1,32 +1,31 @@
 package com.stockmarket.app.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 /**
- * Stock Entity - represents stock data in the database.
- * 
- * Here's what each annotation does:
- * 
- * @Entity - Marks this class as a JPA entity, which will be mapped to a database table
- * @Table - Specifies the table name in the database (in this case, "stocks")
- * @Data - Lombok annotation that generates getters, setters, toString, equals, and hashCode methods
- * @Builder - Lombok annotation that implements the Builder pattern for this class
- * @NoArgsConstructor - Lombok annotation that generates a constructor with no parameters
- * @AllArgsConstructor - Lombok annotation that generates a constructor with all parameters
+ * Entity representing a stock in the stock market application.
+ * <p>
+ * This class defines all the properties of a stock such as its symbol,
+ * company name, and current price. It is mapped to a database table named "stocks".
+ * </p>
+ *
+ * @author stockmarket-app-team
+ * @version 1.0
  */
 @Entity
 @Table(name = "stocks")
@@ -34,7 +33,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Stock {
+public class Stock implements Serializable {
 
     /**
      * @Id - Marks this field as the primary key
@@ -83,4 +82,19 @@ public class Stock {
     
     // Industry within the sector (e.g., Software, Pharmaceuticals, etc.)
     private String industry;
+
+    /**
+     * A description or additional information about the stock.
+     */
+    private String description;
+
+    /**
+     * Pre-market price for the stock.
+     */
+    private BigDecimal preMarketPrice;
+
+    /**
+     * After-hours trading price for the stock.
+     */
+    private BigDecimal afterHoursPrice;
 } 
